@@ -24,7 +24,6 @@
       --navy: #0d1117;
       --bg-deep: #080c12;
       --rope: #7a5c2e;
-      /* Board size calculado via JS, mas definimos fallback */
       --board-size: min(92vw, 480px);
     }
 
@@ -56,6 +55,236 @@
     }
 
     /* =============================================
+       MODAL DE CONFIRMAÇÃO
+    ============================================= */
+    #confirm-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 12, 18, .82);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      animation: fadeIn .18s ease;
+    }
+
+    #confirm-overlay.open {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    @keyframes popIn {
+      from { transform: scale(.88); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    .confirm-modal {
+      background: linear-gradient(155deg, #f5e8b8 0%, #e8cc82 40%, #d4b060 80%, #c9a44b 100%);
+      border: 8px solid var(--ink);
+      border-radius: 3px;
+      box-shadow:
+        0 0 0 2px var(--parchment-dark),
+        0 0 0 4px var(--ink),
+        0 0 0 6px var(--parchment-aged),
+        0 20px 60px rgba(0, 0, 0, .9);
+      max-width: 360px;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      animation: popIn .22s cubic-bezier(.34,1.56,.64,1) both;
+    }
+
+    .confirm-modal::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='turbulence' baseFrequency='.4' numOctaves='4' seed='8' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.06'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      mix-blend-mode: multiply;
+    }
+
+    .confirm-nail {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      background: radial-gradient(circle at 35% 35%, #d4a843, #7a5c1e);
+      border-radius: 50%;
+      border: 2px solid #5a3e0e;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, .6), inset 0 1px 2px rgba(255, 255, 255, .4);
+      z-index: 2;
+    }
+    .confirm-nail.tl { top: -6px; left: -6px; }
+    .confirm-nail.tr { top: -6px; right: -6px; }
+    .confirm-nail.bl { bottom: -6px; left: -6px; }
+    .confirm-nail.br { bottom: -6px; right: -6px; }
+
+    .confirm-header {
+      background: var(--ink);
+      color: var(--parchment);
+      padding: .5rem 1.2rem .45rem;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .confirm-header::before,
+    .confirm-header::after {
+      content: '☠';
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      color: var(--gold);
+      opacity: .7;
+    }
+    .confirm-header::before { left: .8rem; }
+    .confirm-header::after  { right: .8rem; }
+
+    .confirm-header-title {
+      font-family: 'Pirata One', Impact, sans-serif;
+      font-size: clamp(1.4rem, 7vw, 2rem);
+      letter-spacing: .12em;
+      line-height: 1;
+      color: var(--parchment);
+      text-shadow: 2px 2px 0 rgba(0,0,0,.5);
+    }
+
+    .confirm-body {
+      position: relative;
+      z-index: 1;
+      padding: 1.2rem 1.4rem 1rem;
+      text-align: center;
+    }
+
+    .confirm-skull {
+      font-size: 2.8rem;
+      line-height: 1;
+      display: block;
+      margin-bottom: .5rem;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,.2));
+    }
+
+    .confirm-question {
+      font-family: 'Pirata One', Georgia, serif;
+      font-size: clamp(.95rem, 4vw, 1.15rem);
+      color: var(--ink);
+      line-height: 1.4;
+      letter-spacing: .04em;
+      margin-bottom: .35rem;
+    }
+
+    .confirm-sub {
+      font-size: clamp(.75rem, 3vw, .85rem);
+      color: var(--ink-light);
+      font-style: italic;
+      margin-bottom: 1.2rem;
+      letter-spacing: .03em;
+    }
+
+    .confirm-divider {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      margin-bottom: 1.1rem;
+      color: var(--ink-light);
+    }
+    .confirm-divider::before,
+    .confirm-divider::after {
+      content: '';
+      flex: 1;
+      height: 1.5px;
+      background: linear-gradient(90deg, transparent, var(--ink-light), transparent);
+    }
+    .confirm-divider span { font-size: .9rem; opacity: .6; }
+
+    .confirm-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .confirm-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: 'Pirata One', Georgia, serif;
+      font-size: clamp(.85rem, 3.8vw, 1rem);
+      letter-spacing: .06em;
+      padding: 11px 10px;
+      border-radius: 2px;
+      border: 2px solid var(--ink-light);
+      background: rgba(26, 14, 8, .08);
+      color: var(--ink);
+      cursor: pointer;
+      transition: background .15s, transform .1s, box-shadow .15s;
+      touch-action: manipulation;
+      min-height: 48px;
+      text-shadow: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .confirm-btn::after {
+      content: '';
+      position: absolute;
+      inset: 3px;
+      border: 1px solid rgba(107, 61, 30, .18);
+      border-radius: 1px;
+      pointer-events: none;
+    }
+
+    .confirm-btn:active {
+      transform: scale(.96);
+      background: rgba(26, 14, 8, .16);
+    }
+
+    .confirm-btn.danger {
+      background: var(--red);
+      border-color: #4a0000;
+      color: var(--parchment);
+    }
+    .confirm-btn.danger::after {
+      border-color: rgba(255,220,180,.2);
+    }
+    .confirm-btn.danger:hover {
+      background: var(--red-light);
+    }
+    .confirm-btn.danger:active {
+      background: #6a0000;
+    }
+
+    .confirm-btn.cancel:hover {
+      background: rgba(26, 14, 8, .14);
+    }
+
+    .confirm-stamp {
+      position: absolute;
+      right: 14px;
+      bottom: 60px;
+      font-family: 'Pirata One', Georgia, serif;
+      font-size: .55rem;
+      letter-spacing: .18em;
+      color: var(--red);
+      opacity: .25;
+      transform: rotate(18deg);
+      text-transform: uppercase;
+      pointer-events: none;
+      border: 2px solid var(--red);
+      padding: 3px 6px;
+      line-height: 1.2;
+      z-index: 1;
+    }
+
+    /* =============================================
        MOLDURA PRINCIPAL
     ============================================= */
     .poster-wrap {
@@ -75,25 +304,10 @@
       z-index: 20;
     }
 
-    .corner-nail.tl {
-      top: -8px;
-      left: -8px;
-    }
-
-    .corner-nail.tr {
-      top: -8px;
-      right: -8px;
-    }
-
-    .corner-nail.bl {
-      bottom: -8px;
-      left: -8px;
-    }
-
-    .corner-nail.br {
-      bottom: -8px;
-      right: -8px;
-    }
+    .corner-nail.tl { top: -8px; left: -8px; }
+    .corner-nail.tr { top: -8px; right: -8px; }
+    .corner-nail.bl { bottom: -8px; left: -8px; }
+    .corner-nail.br { bottom: -8px; right: -8px; }
 
     .poster {
       background: linear-gradient(160deg, #f5e8b8 0%, #e8cc82 30%, #d4b060 60%, #c9a44b 100%);
@@ -136,9 +350,6 @@
       padding: 0 .9rem 1.2rem;
     }
 
-    /* =============================================
-       CABEÇALHO WANTED
-    ============================================= */
     .wanted-stripe {
       background: var(--ink);
       color: var(--parchment);
@@ -157,14 +368,8 @@
       font-size: .9rem;
       color: var(--gold);
     }
-
-    .wanted-stripe::before {
-      left: 1rem;
-    }
-
-    .wanted-stripe::after {
-      right: 1rem;
-    }
+    .wanted-stripe::before { left: 1rem; }
+    .wanted-stripe::after  { right: 1rem; }
 
     .wanted-title {
       font-family: 'Pirata One', 'Impact', sans-serif;
@@ -199,7 +404,6 @@
       margin: .5rem 0;
       color: var(--ink-light);
     }
-
     .anchor-divider::before,
     .anchor-divider::after {
       content: '';
@@ -207,15 +411,8 @@
       height: 2px;
       background: linear-gradient(90deg, transparent, var(--ink-light), transparent);
     }
+    .anchor-divider span { font-size: 1.2rem; opacity: .7; }
 
-    .anchor-divider span {
-      font-size: 1.2rem;
-      opacity: .7;
-    }
-
-    /* =============================================
-       SELETOR DE IMAGENS
-    ============================================= */
     #image-picker {
       display: flex;
       gap: 7px;
@@ -236,11 +433,7 @@
       box-shadow: 0 2px 6px rgba(0, 0, 0, .3);
       touch-action: manipulation;
     }
-
-    .img-thumb:active {
-      transform: scale(.96);
-    }
-
+    .img-thumb:active { transform: scale(.96); }
     .img-thumb.active {
       border-color: var(--red);
       box-shadow: 0 0 0 2px var(--red), 0 4px 12px rgba(0, 0, 0, .4);
@@ -248,9 +441,6 @@
       transform: scale(1.06);
     }
 
-    /* =============================================
-       STATS — linha única compacta
-    ============================================= */
     #pz-stats {
       display: flex;
       gap: 6px;
@@ -272,16 +462,12 @@
       font-family: Georgia, serif;
       font-weight: bold;
     }
-
     .stat-pill span {
       font-family: 'Pirata One', Georgia, serif;
       color: var(--red);
       font-size: clamp(13px, 3.5vw, 15px);
     }
 
-    /* =============================================
-       CONTROLES — mobile-first
-    ============================================= */
     #pz-controls {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -300,7 +486,6 @@
       padding: 8px 12px;
       justify-content: center;
     }
-
     .ctrl-group label {
       font-family: 'Pirata One', Georgia, serif;
       font-size: clamp(12px, 3.5vw, 14px);
@@ -308,7 +493,6 @@
       white-space: nowrap;
       letter-spacing: .06em;
     }
-
     .ctrl-group select {
       background: transparent;
       border: none;
@@ -338,31 +522,24 @@
       transition: background .15s, transform .1s;
       touch-action: manipulation;
       min-height: 44px;
-      /* área de toque mínima */
       white-space: nowrap;
     }
-
     .pz-btn:active {
       background: rgba(26, 14, 8, .18);
       transform: scale(.97);
     }
-
     .pz-btn.primary {
       background: var(--red);
       border-color: #4a0000;
       color: var(--parchment);
       text-shadow: 1px 1px 0 rgba(0, 0, 0, .4);
     }
-
-    .pz-btn.primary:active {
-      background: var(--red-light);
-    }
+    .pz-btn.primary:active { background: var(--red-light); }
 
     #pz-upload-btn {
       position: relative;
       overflow: hidden;
     }
-
     #pz-upload-btn input {
       position: absolute;
       inset: 0;
@@ -370,9 +547,6 @@
       cursor: pointer;
     }
 
-    /* =============================================
-       LAYOUT DO JOGO — coluna única no mobile
-    ============================================= */
     #pz-main {
       display: flex;
       flex-direction: column;
@@ -380,7 +554,6 @@
       gap: .8rem;
     }
 
-    /* Board */
     .board-label {
       text-align: center;
       font-family: 'Pirata One', Georgia, serif;
@@ -407,37 +580,16 @@
       pointer-events: none;
       line-height: 1;
     }
-
-    .skull-corner.tl {
-      top: -1px;
-      left: 1px;
-      transform: rotate(-20deg);
-    }
-
-    .skull-corner.tr {
-      top: -1px;
-      right: 1px;
-      transform: rotate(20deg);
-    }
-
-    .skull-corner.bl {
-      bottom: -1px;
-      left: 1px;
-      transform: rotate(10deg);
-    }
-
-    .skull-corner.br {
-      bottom: -1px;
-      right: 1px;
-      transform: rotate(-10deg);
-    }
+    .skull-corner.tl { top: -1px; left: 1px; transform: rotate(-20deg); }
+    .skull-corner.tr { top: -1px; right: 1px; transform: rotate(20deg); }
+    .skull-corner.bl { bottom: -1px; left: 1px; transform: rotate(10deg); }
+    .skull-corner.br { bottom: -1px; right: 1px; transform: rotate(-10deg); }
 
     #pz-board {
       position: relative;
       border-radius: 1px;
       overflow: hidden;
       box-shadow: inset 0 0 24px rgba(0, 0, 0, .4);
-      /* tamanho definido via JS */
     }
 
     .piece {
@@ -447,22 +599,16 @@
       border: 1px solid rgba(255, 255, 255, .15);
       box-shadow: 2px 2px 6px rgba(0, 0, 0, .5);
       touch-action: none;
-      /* essencial para touch drag */
       user-select: none;
       -webkit-user-select: none;
     }
-
-    .piece:active {
-      cursor: grabbing;
-    }
-
+    .piece:active { cursor: grabbing; }
     .piece.dragging {
       z-index: 999;
       outline: 3px solid var(--gold-bright);
       filter: brightness(1.1) drop-shadow(0 6px 18px rgba(0, 0, 0, .7));
       border-color: var(--gold-bright);
     }
-
     .piece.correct {
       z-index: 1;
       cursor: default;
@@ -473,9 +619,6 @@
       filter: none;
     }
 
-    /* =============================================
-       SIDEBAR → vira linha de info no mobile
-    ============================================= */
     #pz-sidebar {
       display: flex;
       flex-direction: row;
@@ -495,14 +638,10 @@
       min-width: 130px;
       max-width: 200px;
     }
-
     .side-card::after {
       content: '';
       position: absolute;
-      top: 4px;
-      left: 4px;
-      right: 4px;
-      bottom: 4px;
+      top: 4px; left: 4px; right: 4px; bottom: 4px;
       border: 1px solid rgba(107, 61, 30, .2);
       border-radius: 1px;
       pointer-events: none;
@@ -520,7 +659,6 @@
       text-transform: uppercase;
     }
 
-    /* card preview: coloca canvas + barra lado a lado em mobile */
     #card-preview {
       display: flex;
       flex-direction: column;
@@ -545,7 +683,6 @@
       overflow: hidden;
       border: 1px solid var(--ink-light);
     }
-
     #pz-progress-bar {
       height: 100%;
       background: linear-gradient(90deg, #8b0000, #c9a44b);
@@ -553,14 +690,12 @@
       width: 0%;
       transition: width .3s;
     }
-
     #pz-progress-label {
       font-size: 12px;
       color: var(--ink);
       text-align: center;
       font-weight: bold;
     }
-
     #pz-progress-label span {
       color: var(--red);
       font-family: 'Pirata One', Georgia, serif;
@@ -575,7 +710,6 @@
       font-family: 'Courier New', monospace;
       text-align: center;
     }
-
     #pz-timer-sub {
       font-size: 10px;
       color: var(--ink-light);
@@ -585,9 +719,6 @@
       letter-spacing: .06em;
     }
 
-    /* =============================================
-       WIN
-    ============================================= */
     #pz-win {
       display: none;
       background: linear-gradient(135deg, var(--parchment), var(--parchment-mid));
@@ -599,19 +730,10 @@
       width: 100%;
       max-width: 100%;
     }
-
     @keyframes glowPulse {
-
-      0%,
-      100% {
-        box-shadow: 0 0 14px rgba(201, 164, 75, .3);
-      }
-
-      50% {
-        box-shadow: 0 0 32px rgba(201, 164, 75, .7);
-      }
+      0%, 100% { box-shadow: 0 0 14px rgba(201, 164, 75, .3); }
+      50%       { box-shadow: 0 0 32px rgba(201, 164, 75, .7); }
     }
-
     #pz-win-title {
       font-family: 'Pirata One', sans-serif;
       font-size: 1.2rem;
@@ -619,7 +741,6 @@
       letter-spacing: .08em;
       text-transform: uppercase;
     }
-
     #pz-win-sub {
       font-size: 12px;
       color: var(--ink);
@@ -627,9 +748,6 @@
       margin-top: 3px;
     }
 
-    /* =============================================
-       RODAPÉ
-    ============================================= */
     .poster-footer {
       text-align: center;
       margin-top: .9rem;
@@ -637,7 +755,6 @@
       border-top: 2.5px solid var(--ink);
       position: relative;
     }
-
     .poster-footer::before {
       content: '❖ ❖ ❖';
       position: absolute;
@@ -650,14 +767,12 @@
       font-size: .8rem;
       letter-spacing: .3em;
     }
-
     .bounty-text {
       font-family: 'Pirata One', Georgia, serif;
       font-size: clamp(.9rem, 3.5vw, 1.3rem);
       letter-spacing: .1em;
       color: var(--ink);
     }
-
     .bounty-value {
       font-family: 'Pirata One', Georgia, serif;
       font-size: clamp(1.4rem, 6vw, 2.4rem);
@@ -667,7 +782,6 @@
       letter-spacing: .06em;
       text-shadow: 2px 2px 0 rgba(0, 0, 0, .12);
     }
-
     .world-gov {
       font-size: clamp(.6rem, 2.2vw, .7rem);
       letter-spacing: .25em;
@@ -676,75 +790,59 @@
       text-transform: uppercase;
     }
 
-    /* =============================================
-       DESKTOP — aproveita espaço horizontal
-    ============================================= */
     @media (min-width: 620px) {
-      body {
-        padding: 2rem 1rem;
-      }
-
-      .poster-inner {
-        padding: 0 2rem 1.5rem;
-      }
-
-      .wanted-stripe {
-        margin: 0 -2rem .5rem;
-      }
-
-      #pz-controls {
-        grid-template-columns: auto 1fr 1fr;
-      }
-
-      .ctrl-group {
-        grid-column: auto;
-      }
-
-      #pz-main {
-        flex-direction: row;
-        align-items: flex-start;
-        justify-content: center;
-      }
-
-      #pz-sidebar {
-        flex-direction: column;
-        flex-wrap: nowrap;
-        min-width: 150px;
-        max-width: 175px;
-        width: auto;
-      }
-
-      .side-card {
-        max-width: 100%;
-      }
-
-      #pz-preview {
-        width: 100%;
-        height: auto;
-      }
-
-      #pz-win {
-        width: auto;
-      }
+      body { padding: 2rem 1rem; }
+      .poster-inner { padding: 0 2rem 1.5rem; }
+      .wanted-stripe { margin: 0 -2rem .5rem; }
+      #pz-controls { grid-template-columns: auto 1fr 1fr; }
+      .ctrl-group { grid-column: auto; }
+      #pz-main { flex-direction: row; align-items: flex-start; justify-content: center; }
+      #pz-sidebar { flex-direction: column; flex-wrap: nowrap; min-width: 150px; max-width: 175px; width: auto; }
+      .side-card { max-width: 100%; }
+      #pz-preview { width: 100%; height: auto; }
+      #pz-win { width: auto; }
     }
 
-    /* Scrollbar */
-    ::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: var(--parchment-dark);
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: var(--ink-light);
-      border-radius: 3px;
-    }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--parchment-dark); }
+    ::-webkit-scrollbar-thumb { background: var(--ink-light); border-radius: 3px; }
   </style>
 </head>
 
 <body>
+
+  <!-- MODAL DE CONFIRMAÇÃO -->
+  <div id="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+    <div class="confirm-modal">
+      <div class="confirm-nail tl"></div>
+      <div class="confirm-nail tr"></div>
+      <div class="confirm-nail bl"></div>
+      <div class="confirm-nail br"></div>
+
+      <div class="confirm-header">
+        <div class="confirm-header-title" id="confirm-title">Abandonar Caçada?</div>
+      </div>
+
+      <div class="confirm-body">
+        <span class="confirm-skull">☠️</span>
+        <p class="confirm-question" id="confirm-question">
+          Tem certeza que quer abandonar<br>a caçada atual?
+        </p>
+        <p class="confirm-sub" id="confirm-sub">
+          Seu progresso será perdido para sempre!
+        </p>
+
+        <div class="confirm-divider"><span>❖</span><span>⚓</span><span>❖</span></div>
+
+        <div class="confirm-actions">
+          <button class="confirm-btn cancel" id="confirm-cancel">🏳️ Recuar</button>
+          <button class="confirm-btn danger" id="confirm-ok">⚔️ Nova Caçada</button>
+        </div>
+      </div>
+
+      <div class="confirm-stamp">Governo<br>Mundial</div>
+    </div>
+  </div>
 
   <div class="poster-wrap">
     <div class="corner-nail tl"></div>
@@ -840,9 +938,6 @@
   </div>
 
   <script>
-    /* =============================================
-       LISTA DE IMAGENS
-    ============================================= */
     const lista_de_imagens = [
       "Luffy.jpg",
       "Zoro.jpg",
@@ -857,43 +952,108 @@
 
     const BOUNTIES = { 3: '30.000.000', 4: '60.000.000', 5: '100.000.000', 6: '150.000.000' };
 
-    /* --- DOM refs --- */
-    const board = document.getElementById('pz-board');
-    const prevCanvas = document.getElementById('pz-preview');
-    const diffSelect = document.getElementById('diff-select');
-    const fileInput = document.getElementById('file-input');
-    const progDone = document.getElementById('prog-done');
-    const progTotal = document.getElementById('prog-total');
-    const progBar = document.getElementById('pz-progress-bar');
-    const statGrid = document.getElementById('stat-grid');
-    const statMoves = document.getElementById('stat-moves');
-    const timerVal = document.getElementById('pz-timer-val');
-    const timerSub = document.getElementById('pz-timer-sub');
-    const winBox = document.getElementById('pz-win');
-    const winSub = document.getElementById('pz-win-sub');
-    const bountyDisp = document.getElementById('bounty-display');
-    const imgPicker = document.getElementById('image-picker');
+    const board       = document.getElementById('pz-board');
+    const prevCanvas  = document.getElementById('pz-preview');
+    const diffSelect  = document.getElementById('diff-select');
+    const fileInput   = document.getElementById('file-input');
+    const progDone    = document.getElementById('prog-done');
+    const progTotal   = document.getElementById('prog-total');
+    const progBar     = document.getElementById('pz-progress-bar');
+    const statGrid    = document.getElementById('stat-grid');
+    const statMoves   = document.getElementById('stat-moves');
+    const timerVal    = document.getElementById('pz-timer-val');
+    const timerSub    = document.getElementById('pz-timer-sub');
+    const winBox      = document.getElementById('pz-win');
+    const winSub      = document.getElementById('pz-win-sub');
+    const bountyDisp  = document.getElementById('bounty-display');
+    const imgPicker   = document.getElementById('image-picker');
 
-    /* --- Estado --- */
+    /* Modal refs */
+    const overlay       = document.getElementById('confirm-overlay');
+    const confirmOkBtn  = document.getElementById('confirm-ok');
+    const confirmCancel = document.getElementById('confirm-cancel');
+    const confirmTitle  = document.getElementById('confirm-title');
+    const confirmQuestion = document.getElementById('confirm-question');
+    const confirmSub    = document.getElementById('confirm-sub');
+
     let img = null, N = 4, PIECE = 80;
     let pieces = [], dragging = null, offX = 0, offY = 0;
     let moves = 0, timerSecs = 0, timerInterval = null;
     let hinting = false;
-    const SNAP_RATIO = 0.28; // 28% do tamanho da peça como margem de snap
+    let gameStarted = false;
+    const SNAP_RATIO = 0.28;
+
+    /* =============================================
+       MODAL — helpers
+    ============================================= */
+    let pendingAction = null;
+
+    function askConfirm(opts, onConfirm) {
+      /* opts: { title, question, sub, okLabel } */
+      confirmTitle.textContent    = opts.title    || 'Abandonar Caçada?';
+      confirmQuestion.innerHTML   = opts.question || 'Tem certeza que quer abandonar<br>a caçada atual?';
+      confirmSub.textContent      = opts.sub      || 'Seu progresso será perdido para sempre!';
+      confirmOkBtn.textContent    = opts.okLabel  || '⚔️ Nova Caçada';
+
+      pendingAction = onConfirm;
+      overlay.classList.add('open');
+
+      /* foco acessível */
+      confirmCancel.focus();
+    }
+
+    function closeModal() {
+      overlay.classList.remove('open');
+      pendingAction = null;
+    }
+
+    confirmOkBtn.addEventListener('click', () => {
+      if (pendingAction){
+        pendingAction();
+      }
+      closeModal();
+    });
+
+    confirmCancel.addEventListener('click', closeModal);
+
+    /* Fecha ao clicar fora do modal */
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) closeModal();
+    });
+
+    /* Fecha com Escape */
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal();
+    });
+
+    /* Guarda o valor anterior do diff para poder reverter */
+    let lastDiffValue = diffSelect.value;
+
+    /* =============================================
+       VERIFICAR SE DEVE PERGUNTAR ANTES
+    ============================================= */
+    function shouldAskConfirm() {
+      /* Só pergunta se o jogo está em andamento e tem peças não colocadas */
+      if (!gameStarted) return false;
+      const done  = pieces.filter(p => p.placed).length;
+      const total = pieces.length;
+      /* Não pergunta se já terminou ou ainda não começou */
+      if (total === 0 || done === total) return false;
+      return true;
+    }
 
     /* =============================================
        CALCULAR TAMANHO DO BOARD
-       Ajusta ao viewport deixando margem para UI
     ============================================= */
     function calcBoardSize() {
-      const maxW = Math.min(window.innerWidth - 40, 480); // 40px de margem total
-      const boardSize = Math.floor(maxW / N) * N;         // múltiplo exato de N
+      const maxW = Math.min(window.innerWidth - 40, 480);
+      const boardSize = Math.floor(maxW / N) * N;
       PIECE = boardSize / N;
       return boardSize;
     }
 
     /* =============================================
-       THUMBNAILS DA LISTA
+       THUMBNAILS
     ============================================= */
     function buildImagePicker() {
       imgPicker.innerHTML = '';
@@ -904,12 +1064,25 @@
         el.src = src;
         el.alt = `Imagem ${i + 1}`;
         el.addEventListener('click', () => {
-          document.querySelectorAll('.img-thumb').forEach(t => t.classList.remove('active'));
-          el.classList.add('active');
-          const im = new Image();
-          im.onload = () => { img = im; startGame(); };
-          im.onerror = () => alert('Não foi possível carregar a imagem.');
-          im.src = src;
+          const doSwitch = () => {
+            document.querySelectorAll('.img-thumb').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            const im = new Image();
+            im.onload = () => { img = im; startGame(); };
+            im.onerror = () => alert('Não foi possível carregar a imagem.');
+            im.src = src;
+          };
+
+          if (shouldAskConfirm()) {
+            askConfirm({
+              title:    'Trocar Procurado?',
+              question: 'Quer trocar o cartaz e<br>começar uma nova caçada?',
+              sub:      'O progresso atual será perdido.',
+              okLabel:  '🏴‍☠️ Trocar Cartaz',
+            }, doSwitch);
+          } else {
+            doSwitch();
+          }
         });
         imgPicker.appendChild(el);
       });
@@ -970,26 +1143,27 @@
     ============================================= */
     function initGame() {
       N = parseInt(diffSelect.value);
+      lastDiffValue = diffSelect.value;
       moves = 0; statMoves.textContent = '0';
       statGrid.textContent = N + '×' + N;
       winBox.style.display = 'none';
       updateBounty();
+      gameStarted = false;
       if (img) startGame();
       else buildDefaultImage(i => { img = i; startGame(); });
     }
 
     function startGame() {
       const SIZE = calcBoardSize();
-      board.style.width = SIZE + 'px';
+      board.style.width  = SIZE + 'px';
       board.style.height = SIZE + 'px';
       board.innerHTML = ''; pieces = [];
+      moves = 0; statMoves.textContent = '0';
 
-      /* preview */
       const pCtx = prevCanvas.getContext('2d');
       prevCanvas.width = 148; prevCanvas.height = 148;
       pCtx.drawImage(img, 0, 0, 148, 148);
 
-      /* criar e embaralhar posições */
       const positions = [];
       for (let r = 0; r < N; r++)
         for (let c = 0; c < N; c++) positions.push({ r, c });
@@ -1018,12 +1192,13 @@
         cv.addEventListener('touchstart', e => startDrag(e, piece, 'touch'), { passive: false });
       });
 
+      gameStarted = true;
       updateStatus();
       startTimer();
     }
 
     /* =============================================
-       DRAG — mouse + touch unificados
+       DRAG
     ============================================= */
     function getXY(e) {
       if (e.touches && e.touches.length > 0)
@@ -1042,7 +1217,7 @@
       const rect = board.getBoundingClientRect();
       const { x, y } = getXY(e);
       offX = x - rect.left - parseInt(piece.el.style.left);
-      offY = y - rect.top - parseInt(piece.el.style.top);
+      offY = y - rect.top  - parseInt(piece.el.style.top);
     }
 
     function onMove(e) {
@@ -1051,12 +1226,12 @@
       const rect = board.getBoundingClientRect();
       const { x, y } = getXY(e);
       const px = Math.max(0, Math.min(N * PIECE - PIECE, x - rect.left - offX));
-      const py = Math.max(0, Math.min(N * PIECE - PIECE, y - rect.top - offY));
+      const py = Math.max(0, Math.min(N * PIECE - PIECE, y - rect.top  - offY));
       dragging.el.style.left = px + 'px';
-      dragging.el.style.top = py + 'px';
+      dragging.el.style.top  = py + 'px';
     }
 
-    function onUp(e) {
+    function onUp() {
       if (!dragging) return;
       const x = parseInt(dragging.el.style.left);
       const y = parseInt(dragging.el.style.top);
@@ -1065,7 +1240,7 @@
       const snap = PIECE * SNAP_RATIO;
       if (Math.abs(x - tx) < snap && Math.abs(y - ty) < snap) {
         dragging.el.style.left = tx + 'px';
-        dragging.el.style.top = ty + 'px';
+        dragging.el.style.top  = ty + 'px';
         dragging.el.classList.add('correct');
         dragging.placed = true;
       }
@@ -1078,13 +1253,14 @@
     }
 
     function updateStatus() {
-      const done = pieces.filter(p => p.placed).length;
+      const done  = pieces.filter(p => p.placed).length;
       const total = pieces.length;
       progDone.textContent = done;
       progTotal.textContent = total;
       progBar.style.width = (total ? Math.round(done / total * 100) : 0) + '%';
       if (done === total && total > 0) {
         stopTimer();
+        gameStarted = false;
         winBox.style.display = 'block';
         winSub.textContent = moves + ' movimentos · ' + fmt(timerSecs);
       }
@@ -1096,35 +1272,81 @@
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
     document.addEventListener('touchmove', e => { if (dragging) onMove(e); }, { passive: false });
-    document.addEventListener('touchend', onUp, { passive: false });
+    document.addEventListener('touchend', onUp,    { passive: false });
     document.addEventListener('touchcancel', onUp, { passive: false });
 
-    /* Recalcular board ao girar/redimensionar */
-    window.addEventListener('resize', () => {
-      if (img) startGame();
+    window.addEventListener('resize', () => { if (img) startGame(); });
+
+    /* Botão "Nova Caçada" */
+    document.getElementById('shuffle-btn').addEventListener('click', () => {
+      if (shouldAskConfirm()) {
+        askConfirm({
+          title:    'Nova Caçada?',
+          question: 'Abandonar a caçada atual<br>e começar de novo?',
+          sub:      'Seu progresso será perdido para sempre!',
+          okLabel:  '⚔️ Confirmar',
+        }, initGame);
+      } else {
+        initGame();
+      }
     });
 
-    document.getElementById('shuffle-btn').addEventListener('click', initGame);
-    diffSelect.addEventListener('change', () => { updateBounty(); initGame(); });
+    /* Seletor de dificuldade */
+    diffSelect.addEventListener('change', () => {
+      if (shouldAskConfirm()) {
+        const newVal = diffSelect.value;
+        /* Reverte visualmente enquanto aguarda confirmação */
+        diffSelect.value = lastDiffValue;
 
+        askConfirm({
+          title:    'Mudar Dificuldade?',
+          question: 'Mudar a dificuldade vai<br>reiniciar a caçada atual.',
+          sub:      'Seu progresso será perdido para sempre!',
+          okLabel:  '⚔️ Mudar e Reiniciar',
+        }, () => {
+          diffSelect.value = newVal;
+          updateBounty();
+          initGame();
+        });
+      } else {
+        updateBounty();
+        initGame();
+      }
+    });
+
+    /* Upload de imagem */
     fileInput.addEventListener('change', e => {
       const file = e.target.files[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = ev => {
-        const im = new Image();
-        im.onload = () => { img = im; startGame(); };
-        im.src = ev.target.result;
+      const doUpload = () => {
+        const reader = new FileReader();
+        reader.onload = ev => {
+          const im = new Image();
+          im.onload = () => { img = im; startGame(); };
+          im.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
       };
-      reader.readAsDataURL(file);
+
+      if (shouldAskConfirm()) {
+        askConfirm({
+          title:    'Usar Novo Cartaz?',
+          question: 'Substituir a imagem vai<br>reiniciar a caçada atual.',
+          sub:      'Seu progresso será perdido para sempre!',
+          okLabel:  '📜 Usar Novo Cartaz',
+        }, doUpload);
+      } else {
+        doUpload();
+      }
     });
 
+    /* Botão Pista */
     document.getElementById('hint-btn').addEventListener('click', () => {
       if (hinting) return;
       hinting = true;
       pieces.forEach(p => { if (!p.placed) p.el.style.opacity = '.2'; });
       const oc = document.createElement('canvas');
-      oc.width = N * PIECE;
+      oc.width  = N * PIECE;
       oc.height = N * PIECE;
       oc.style.cssText = `position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.5;`;
       oc.id = 'hint-overlay';
