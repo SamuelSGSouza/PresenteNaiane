@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>One Piece – Cartaz de Procurado</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pirata+One&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --parchment: #f2dfa0;
+      --parchment-mid: #e4c97a;
+      --parchment-dark: #c9a846;
+      --parchment-aged: #b8903a;
+      --ink: #1a0e08;
+      --ink-mid: #3d2010;
+      --ink-light: #6b3d1e;
+      --red: #8b0000;
+      --red-light: #b00000;
+      --gold: #c9a44b;
+      --gold-bright: #f5d87a;
+      --navy: #0d1117;
+      --bg-deep: #080c12;
+      --rope: #7a5c2e;
+      /* Board size calculado via JS, mas definimos fallback */
+      --board-size: min(92vw, 480px);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      touch-action: manipulation;
+    }
+
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      background: var(--bg-deep);
+      background-image:
+        radial-gradient(ellipse 80% 60% at 15% 40%, rgba(139, 0, 0, .18) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 85% 70%, rgba(201, 164, 75, .12) 0%, transparent 60%);
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 1rem .6rem 2rem;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* =============================================
+       MOLDURA PRINCIPAL
+    ============================================= */
+    .poster-wrap {
+      max-width: 580px;
+      width: 100%;
+      position: relative;
+    }
+
+    .corner-nail {
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      background: radial-gradient(circle at 35% 35%, #d4a843, #7a5c1e);
+      border-radius: 50%;
+      border: 2px solid #5a3e0e;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, .6), inset 0 1px 2px rgba(255, 255, 255, .4);
+      z-index: 20;
+    }
+
+    .corner-nail.tl {
+      top: -8px;
+      left: -8px;
+    }
+
+    .corner-nail.tr {
+      top: -8px;
+      right: -8px;
+    }
+
+    .corner-nail.bl {
+      bottom: -8px;
+      left: -8px;
+    }
+
+    .corner-nail.br {
+      bottom: -8px;
+      right: -8px;
+    }
+
+    .poster {
+      background: linear-gradient(160deg, #f5e8b8 0%, #e8cc82 30%, #d4b060 60%, #c9a44b 100%);
+      border: 10px solid var(--ink);
+      border-radius: 3px;
+      box-shadow:
+        0 0 0 2px var(--parchment-dark),
+        0 0 0 5px var(--ink),
+        0 0 0 7px var(--parchment-aged),
+        0 16px 48px rgba(0, 0, 0, .8),
+        inset 0 0 60px rgba(0, 0, 0, .08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .poster::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='turbulence' baseFrequency='.4' numOctaves='4' seed='8' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.06'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      mix-blend-mode: multiply;
+    }
+
+    .poster::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 20% at 0% 0%, rgba(26, 14, 8, .15) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 30% at 100% 100%, rgba(26, 14, 8, .12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .poster-inner {
+      position: relative;
+      z-index: 1;
+      padding: 0 .9rem 1.2rem;
+    }
+
+    /* =============================================
+       CABEÇALHO WANTED
+    ============================================= */
+    .wanted-stripe {
+      background: var(--ink);
+      color: var(--parchment);
+      padding: .5rem 0 .45rem;
+      margin: 0 -.9rem .5rem;
+      text-align: center;
+      position: relative;
+    }
+
+    .wanted-stripe::before,
+    .wanted-stripe::after {
+      content: '❖';
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: .9rem;
+      color: var(--gold);
+    }
+
+    .wanted-stripe::before {
+      left: 1rem;
+    }
+
+    .wanted-stripe::after {
+      right: 1rem;
+    }
+
+    .wanted-title {
+      font-family: 'Pirata One', 'Impact', sans-serif;
+      font-size: clamp(3rem, 14vw, 6rem);
+      letter-spacing: .18em;
+      line-height: 1;
+      color: var(--parchment);
+      text-shadow: 3px 3px 0 rgba(0, 0, 0, .5), 5px 5px 0 rgba(0, 0, 0, .2);
+    }
+
+    .wanted-header {
+      text-align: center;
+      margin-bottom: .3rem;
+    }
+
+    .dead-or-alive {
+      display: inline-block;
+      font-family: 'Pirata One', Georgia, serif;
+      font-size: clamp(.85rem, 3.5vw, 1.3rem);
+      letter-spacing: .35em;
+      color: var(--ink);
+      border-top: 2px solid var(--ink);
+      border-bottom: 2px solid var(--ink);
+      padding: .25rem 1.5rem;
+      text-transform: uppercase;
+    }
+
+    .anchor-divider {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      margin: .5rem 0;
+      color: var(--ink-light);
+    }
+
+    .anchor-divider::before,
+    .anchor-divider::after {
+      content: '';
+      flex: 1;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--ink-light), transparent);
+    }
+
+    .anchor-divider span {
+      font-size: 1.2rem;
+      opacity: .7;
+    }
+
+    /* =============================================
+       SELETOR DE IMAGENS
+    ============================================= */
+    #image-picker {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: .8rem;
+    }
+
+    .img-thumb {
+      width: 52px;
+      height: 52px;
+      object-fit: cover;
+      border: 3px solid var(--ink-light);
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all .2s;
+      filter: sepia(.3);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, .3);
+      touch-action: manipulation;
+    }
+
+    .img-thumb:active {
+      transform: scale(.96);
+    }
+
+    .img-thumb.active {
+      border-color: var(--red);
+      box-shadow: 0 0 0 2px var(--red), 0 4px 12px rgba(0, 0, 0, .4);
+      filter: sepia(0);
+      transform: scale(1.06);
+    }
+
+    /* =============================================
+       STATS — linha única compacta
+    ============================================= */
+    #pz-stats {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: .7rem;
+    }
+
+    .stat-pill {
+      background: rgba(26, 14, 8, .08);
+      border: 1.5px solid var(--ink-light);
+      border-radius: 2px;
+      padding: 5px 12px;
+      font-size: clamp(11px, 3vw, 13px);
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-family: Georgia, serif;
+      font-weight: bold;
+    }
+
+    .stat-pill span {
+      font-family: 'Pirata One', Georgia, serif;
+      color: var(--red);
+      font-size: clamp(13px, 3.5vw, 15px);
+    }
+
+    /* =============================================
+       CONTROLES — mobile-first
+    ============================================= */
+    #pz-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-bottom: .8rem;
+    }
+
+    .ctrl-group {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(26, 14, 8, .08);
+      border: 1.5px solid var(--ink-light);
+      border-radius: 2px;
+      padding: 8px 12px;
+      justify-content: center;
+    }
+
+    .ctrl-group label {
+      font-family: 'Pirata One', Georgia, serif;
+      font-size: clamp(12px, 3.5vw, 14px);
+      color: var(--ink);
+      white-space: nowrap;
+      letter-spacing: .06em;
+    }
+
+    .ctrl-group select {
+      background: transparent;
+      border: none;
+      font-size: clamp(12px, 3.5vw, 13px);
+      font-weight: bold;
+      color: var(--ink);
+      cursor: pointer;
+      outline: none;
+      font-family: Georgia, serif;
+      min-height: 28px;
+    }
+
+    .pz-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: 'Pirata One', Georgia, serif;
+      font-size: clamp(12px, 3.5vw, 14px);
+      letter-spacing: .05em;
+      padding: 10px 8px;
+      border-radius: 2px;
+      border: 1.5px solid var(--ink-light);
+      background: rgba(26, 14, 8, .07);
+      color: var(--ink);
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+      touch-action: manipulation;
+      min-height: 44px;
+      /* área de toque mínima */
+      white-space: nowrap;
+    }
+
+    .pz-btn:active {
+      background: rgba(26, 14, 8, .18);
+      transform: scale(.97);
+    }
+
+    .pz-btn.primary {
+      background: var(--red);
+      border-color: #4a0000;
+      color: var(--parchment);
+      text-shadow: 1px 1px 0 rgba(0, 0, 0, .4);
+    }
+
+    .pz-btn.primary:active {
+      background: var(--red-light);
+    }
+
+    #pz-upload-btn {
+      position: relative;
+      overflow: hidden;
+    }
+
+    #pz-upload-btn input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    /* =============================================
+       LAYOUT DO JOGO — coluna única no mobile
+    ============================================= */
+    #pz-main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .8rem;
+    }
+
+    /* Board */
+    .board-label {
+      text-align: center;
+      font-family: 'Pirata One', Georgia, serif;
+      font-size: clamp(.75rem, 3vw, .9rem);
+      letter-spacing: .2em;
+      color: var(--ink-light);
+      margin-bottom: .4rem;
+      text-transform: uppercase;
+    }
+
+    .board-frame {
+      background: var(--ink);
+      padding: 8px;
+      border-radius: 3px;
+      box-shadow: 0 0 0 2px var(--parchment-dark), 0 6px 24px rgba(0, 0, 0, .5);
+      position: relative;
+    }
+
+    .skull-corner {
+      position: absolute;
+      font-size: 1.1rem;
+      color: var(--parchment);
+      opacity: .45;
+      pointer-events: none;
+      line-height: 1;
+    }
+
+    .skull-corner.tl {
+      top: -1px;
+      left: 1px;
+      transform: rotate(-20deg);
+    }
+
+    .skull-corner.tr {
+      top: -1px;
+      right: 1px;
+      transform: rotate(20deg);
+    }
+
+    .skull-corner.bl {
+      bottom: -1px;
+      left: 1px;
+      transform: rotate(10deg);
+    }
+
+    .skull-corner.br {
+      bottom: -1px;
+      right: 1px;
+      transform: rotate(-10deg);
+    }
+
+    #pz-board {
+      position: relative;
+      border-radius: 1px;
+      overflow: hidden;
+      box-shadow: inset 0 0 24px rgba(0, 0, 0, .4);
+      /* tamanho definido via JS */
+    }
+
+    .piece {
+      position: absolute;
+      cursor: grab;
+      box-sizing: border-box;
+      border: 1px solid rgba(255, 255, 255, .15);
+      box-shadow: 2px 2px 6px rgba(0, 0, 0, .5);
+      touch-action: none;
+      /* essencial para touch drag */
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .piece:active {
+      cursor: grabbing;
+    }
+
+    .piece.dragging {
+      z-index: 999;
+      outline: 3px solid var(--gold-bright);
+      filter: brightness(1.1) drop-shadow(0 6px 18px rgba(0, 0, 0, .7));
+      border-color: var(--gold-bright);
+    }
+
+    .piece.correct {
+      z-index: 1;
+      cursor: default;
+      pointer-events: none;
+      outline: none;
+      border-color: transparent;
+      box-shadow: none;
+      filter: none;
+    }
+
+    /* =============================================
+       SIDEBAR → vira linha de info no mobile
+    ============================================= */
+    #pz-sidebar {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 7px;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .side-card {
+      background: rgba(26, 14, 8, .07);
+      border: 1.5px solid var(--ink-light);
+      border-radius: 2px;
+      padding: 10px 12px;
+      position: relative;
+      flex: 1;
+      min-width: 130px;
+      max-width: 200px;
+    }
+
+    .side-card::after {
+      content: '';
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      right: 4px;
+      bottom: 4px;
+      border: 1px solid rgba(107, 61, 30, .2);
+      border-radius: 1px;
+      pointer-events: none;
+    }
+
+    .side-label {
+      font-family: 'Pirata One', Georgia, serif;
+      font-size: 10px;
+      letter-spacing: .12em;
+      color: var(--ink-light);
+      text-align: center;
+      border-bottom: 1.5px solid var(--parchment-mid);
+      padding-bottom: 5px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    /* card preview: coloca canvas + barra lado a lado em mobile */
+    #card-preview {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #pz-preview {
+      display: block;
+      width: 80px;
+      height: 80px;
+      border: 2px solid var(--ink);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, .35);
+      image-rendering: pixelated;
+    }
+
+    #pz-progress-bar-wrap {
+      width: 100%;
+      height: 7px;
+      background: rgba(0, 0, 0, .12);
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid var(--ink-light);
+    }
+
+    #pz-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #8b0000, #c9a44b);
+      border-radius: 4px;
+      width: 0%;
+      transition: width .3s;
+    }
+
+    #pz-progress-label {
+      font-size: 12px;
+      color: var(--ink);
+      text-align: center;
+      font-weight: bold;
+    }
+
+    #pz-progress-label span {
+      color: var(--red);
+      font-family: 'Pirata One', Georgia, serif;
+      font-size: 14px;
+    }
+
+    #pz-timer-val {
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--ink);
+      letter-spacing: .02em;
+      font-family: 'Courier New', monospace;
+      text-align: center;
+    }
+
+    #pz-timer-sub {
+      font-size: 10px;
+      color: var(--ink-light);
+      margin-top: 3px;
+      text-align: center;
+      font-style: italic;
+      letter-spacing: .06em;
+    }
+
+    /* =============================================
+       WIN
+    ============================================= */
+    #pz-win {
+      display: none;
+      background: linear-gradient(135deg, var(--parchment), var(--parchment-mid));
+      border: 2px solid var(--gold);
+      border-radius: 2px;
+      padding: 10px 12px;
+      text-align: center;
+      animation: glowPulse 2s infinite;
+      width: 100%;
+      max-width: 100%;
+    }
+
+    @keyframes glowPulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 14px rgba(201, 164, 75, .3);
+      }
+
+      50% {
+        box-shadow: 0 0 32px rgba(201, 164, 75, .7);
+      }
+    }
+
+    #pz-win-title {
+      font-family: 'Pirata One', sans-serif;
+      font-size: 1.2rem;
+      color: var(--red);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    #pz-win-sub {
+      font-size: 12px;
+      color: var(--ink);
+      font-weight: bold;
+      margin-top: 3px;
+    }
+
+    /* =============================================
+       RODAPÉ
+    ============================================= */
+    .poster-footer {
+      text-align: center;
+      margin-top: .9rem;
+      padding-top: .7rem;
+      border-top: 2.5px solid var(--ink);
+      position: relative;
+    }
+
+    .poster-footer::before {
+      content: '❖ ❖ ❖';
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--parchment-mid);
+      padding: 0 .6rem;
+      color: var(--ink-light);
+      font-size: .8rem;
+      letter-spacing: .3em;
+    }
+
+    .bounty-text {
+      font-family: 'Pirata One', Georgia, serif;
+      font-size: clamp(.9rem, 3.5vw, 1.3rem);
+      letter-spacing: .1em;
+      color: var(--ink);
+    }
+
+    .bounty-value {
+      font-family: 'Pirata One', Georgia, serif;
+      font-size: clamp(1.4rem, 6vw, 2.4rem);
+      color: var(--red);
+      display: block;
+      line-height: 1.1;
+      letter-spacing: .06em;
+      text-shadow: 2px 2px 0 rgba(0, 0, 0, .12);
+    }
+
+    .world-gov {
+      font-size: clamp(.6rem, 2.2vw, .7rem);
+      letter-spacing: .25em;
+      color: var(--ink-light);
+      margin-top: .2rem;
+      text-transform: uppercase;
+    }
+
+    /* =============================================
+       DESKTOP — aproveita espaço horizontal
+    ============================================= */
+    @media (min-width: 620px) {
+      body {
+        padding: 2rem 1rem;
+      }
+
+      .poster-inner {
+        padding: 0 2rem 1.5rem;
+      }
+
+      .wanted-stripe {
+        margin: 0 -2rem .5rem;
+      }
+
+      #pz-controls {
+        grid-template-columns: auto 1fr 1fr;
+      }
+
+      .ctrl-group {
+        grid-column: auto;
+      }
+
+      #pz-main {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: center;
+      }
+
+      #pz-sidebar {
+        flex-direction: column;
+        flex-wrap: nowrap;
+        min-width: 150px;
+        max-width: 175px;
+        width: auto;
+      }
+
+      .side-card {
+        max-width: 100%;
+      }
+
+      #pz-preview {
+        width: 100%;
+        height: auto;
+      }
+
+      #pz-win {
+        width: auto;
+      }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--parchment-dark);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--ink-light);
+      border-radius: 3px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="poster-wrap">
+    <div class="corner-nail tl"></div>
+    <div class="corner-nail tr"></div>
+    <div class="corner-nail bl"></div>
+    <div class="corner-nail br"></div>
+
+    <div class="poster">
+      <div class="wanted-stripe">
+        <div class="wanted-title">WANTED</div>
+      </div>
+
+      <div class="poster-inner">
+        <div class="wanted-header">
+          <div class="dead-or-alive">Dead or Alive</div>
+        </div>
+
+        <div class="anchor-divider"><span>⚓</span><span>☠</span><span>⚓</span></div>
+
+        <div id="image-picker"></div>
+
+        <div id="pz-stats">
+          <div class="stat-pill">⚓ <span id="stat-grid">4×4</span></div>
+          <div class="stat-pill">🏴‍☠️ <span id="stat-moves">0</span> mov.</div>
+        </div>
+
+        <div id="pz-controls">
+          <div class="ctrl-group">
+            <label>Recompensa</label>
+            <select id="diff-select">
+              <option value="3">3×3 · 30M</option>
+              <option value="4" selected>4×4 · 60M</option>
+              <option value="5">5×5 · 100M</option>
+              <option value="6">6×6 · 150M</option>
+            </select>
+          </div>
+          <button class="pz-btn primary" id="shuffle-btn">⚔️ Nova Caçada</button>
+          <button class="pz-btn" id="pz-upload-btn">
+            📜 Cartaz próprio
+            <input type="file" id="file-input" accept="image/*">
+          </button>
+          <button class="pz-btn" id="hint-btn">🔍 Pista</button>
+        </div>
+
+        <div id="pz-main">
+          <div id="pz-board-wrap">
+            <div class="board-label">✦ Montar o cartaz ✦</div>
+            <div class="board-frame">
+              <span class="skull-corner tl">☠</span>
+              <span class="skull-corner tr">☠</span>
+              <span class="skull-corner bl">☠</span>
+              <span class="skull-corner br">☠</span>
+              <div id="pz-board"></div>
+            </div>
+          </div>
+
+          <div id="pz-sidebar">
+            <div class="side-card">
+              <p class="side-label">Cartaz Original</p>
+              <div id="card-preview">
+                <canvas id="pz-preview" width="148" height="148"></canvas>
+                <div style="width:100%">
+                  <div id="pz-progress-bar-wrap">
+                    <div id="pz-progress-bar"></div>
+                  </div>
+                  <div id="pz-progress-label">
+                    <span id="prog-done">0</span> / <span id="prog-total">0</span> peças
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="side-card">
+              <p class="side-label">Tempo de Caçada</p>
+              <div id="pz-timer-val">0:00</div>
+              <div id="pz-timer-sub">em andamento</div>
+            </div>
+
+            <div id="pz-win" class="side-card">
+              <p id="pz-win-title">🏆 Capturado!</p>
+              <p id="pz-win-sub">Recompensa resgatada</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="poster-footer">
+          <div class="bounty-text">Recompensa:</div>
+          <span class="bounty-value" id="bounty-display">B̲ 60.000.000</span>
+          <div class="world-gov">Emitido pelo Governo Mundial · Marines</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =============================================
+       LISTA DE IMAGENS
+    ============================================= */
+    const lista_de_imagens = [
+      "Luffy.jpg",
+      "Zoro.jpg",
+      "Nami.jpg",
+      "tripulacao.jpg",
+      "Sanji.jpg",
+      "Chopper.jpg",
+      "Franky.jpg",
+      "Brook.jpg",
+      "GoingMerry.jpg",
+    ];
+
+    const BOUNTIES = { 3: '30.000.000', 4: '60.000.000', 5: '100.000.000', 6: '150.000.000' };
+
+    /* --- DOM refs --- */
+    const board = document.getElementById('pz-board');
+    const prevCanvas = document.getElementById('pz-preview');
+    const diffSelect = document.getElementById('diff-select');
+    const fileInput = document.getElementById('file-input');
+    const progDone = document.getElementById('prog-done');
+    const progTotal = document.getElementById('prog-total');
+    const progBar = document.getElementById('pz-progress-bar');
+    const statGrid = document.getElementById('stat-grid');
+    const statMoves = document.getElementById('stat-moves');
+    const timerVal = document.getElementById('pz-timer-val');
+    const timerSub = document.getElementById('pz-timer-sub');
+    const winBox = document.getElementById('pz-win');
+    const winSub = document.getElementById('pz-win-sub');
+    const bountyDisp = document.getElementById('bounty-display');
+    const imgPicker = document.getElementById('image-picker');
+
+    /* --- Estado --- */
+    let img = null, N = 4, PIECE = 80;
+    let pieces = [], dragging = null, offX = 0, offY = 0;
+    let moves = 0, timerSecs = 0, timerInterval = null;
+    let hinting = false;
+    const SNAP_RATIO = 0.28; // 28% do tamanho da peça como margem de snap
+
+    /* =============================================
+       CALCULAR TAMANHO DO BOARD
+       Ajusta ao viewport deixando margem para UI
+    ============================================= */
+    function calcBoardSize() {
+      const maxW = Math.min(window.innerWidth - 40, 480); // 40px de margem total
+      const boardSize = Math.floor(maxW / N) * N;         // múltiplo exato de N
+      PIECE = boardSize / N;
+      return boardSize;
+    }
+
+    /* =============================================
+       THUMBNAILS DA LISTA
+    ============================================= */
+    function buildImagePicker() {
+      imgPicker.innerHTML = '';
+      if (!lista_de_imagens.length) return;
+      lista_de_imagens.forEach((src, i) => {
+        const el = document.createElement('img');
+        el.className = 'img-thumb' + (i === 0 ? ' active' : '');
+        el.src = src;
+        el.alt = `Imagem ${i + 1}`;
+        el.addEventListener('click', () => {
+          document.querySelectorAll('.img-thumb').forEach(t => t.classList.remove('active'));
+          el.classList.add('active');
+          const im = new Image();
+          im.onload = () => { img = im; startGame(); };
+          im.onerror = () => alert('Não foi possível carregar a imagem.');
+          im.src = src;
+        });
+        imgPicker.appendChild(el);
+      });
+    }
+
+    /* =============================================
+       IMAGEM PADRÃO
+    ============================================= */
+    function buildDefaultImage(cb) {
+      const c = document.createElement('canvas');
+      c.width = c.height = 480;
+      const ctx = c.getContext('2d');
+      const bg = ctx.createLinearGradient(0, 0, 480, 480);
+      bg.addColorStop(0, '#f2dfa0');
+      bg.addColorStop(.5, '#e8cc82');
+      bg.addColorStop(1, '#c9a44b');
+      ctx.fillStyle = bg; ctx.fillRect(0, 0, 480, 480);
+      ctx.fillStyle = 'rgba(26,14,8,.06)';
+      ctx.beginPath(); ctx.ellipse(40, 40, 60, 60, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(440, 440, 50, 50, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#1a0e08'; ctx.lineWidth = 10;
+      ctx.strokeRect(8, 8, 464, 464);
+      ctx.lineWidth = 3; ctx.strokeRect(20, 20, 440, 440);
+      ctx.font = '180px serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#1a0e08';
+      ctx.fillText('☠', 240, 220);
+      ctx.fillStyle = '#8b0000';
+      ctx.font = 'bold 64px Impact, Arial Black, sans-serif';
+      ctx.fillText('WANTED', 240, 370);
+      ctx.fillStyle = '#1a0e08';
+      ctx.font = 'bold 26px Georgia, serif';
+      ctx.fillText('DEAD OR ALIVE', 240, 415);
+      const im = new Image();
+      im.onload = () => cb(im);
+      im.src = c.toDataURL();
+    }
+
+    /* =============================================
+       TIMER
+    ============================================= */
+    function fmt(s) { return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      timerSecs = 0; timerVal.textContent = '0:00';
+      timerSub.textContent = 'em andamento';
+      timerInterval = setInterval(() => { timerSecs++; timerVal.textContent = fmt(timerSecs); }, 1000);
+    }
+    function stopTimer() { clearInterval(timerInterval); timerSub.textContent = 'capturado!'; }
+
+    function updateBounty() {
+      bountyDisp.textContent = 'B̲ ' + (BOUNTIES[N] || '60.000.000');
+    }
+
+    /* =============================================
+       INICIALIZAR JOGO
+    ============================================= */
+    function initGame() {
+      N = parseInt(diffSelect.value);
+      moves = 0; statMoves.textContent = '0';
+      statGrid.textContent = N + '×' + N;
+      winBox.style.display = 'none';
+      updateBounty();
+      if (img) startGame();
+      else buildDefaultImage(i => { img = i; startGame(); });
+    }
+
+    function startGame() {
+      const SIZE = calcBoardSize();
+      board.style.width = SIZE + 'px';
+      board.style.height = SIZE + 'px';
+      board.innerHTML = ''; pieces = [];
+
+      /* preview */
+      const pCtx = prevCanvas.getContext('2d');
+      prevCanvas.width = 148; prevCanvas.height = 148;
+      pCtx.drawImage(img, 0, 0, 148, 148);
+
+      /* criar e embaralhar posições */
+      const positions = [];
+      for (let r = 0; r < N; r++)
+        for (let c = 0; c < N; c++) positions.push({ r, c });
+      positions.sort(() => Math.random() - .5);
+
+      positions.forEach(({ r, c }) => {
+        const cv = document.createElement('canvas');
+        cv.width = PIECE; cv.height = PIECE;
+        cv.className = 'piece';
+        const ctx = cv.getContext('2d');
+        ctx.drawImage(img,
+          (c / N) * img.naturalWidth, (r / N) * img.naturalHeight,
+          img.naturalWidth / N, img.naturalHeight / N,
+          0, 0, PIECE, PIECE);
+
+        const m = 8;
+        const px = m + Math.random() * (SIZE - PIECE - m * 2);
+        const py = m + Math.random() * (SIZE - PIECE - m * 2);
+        cv.style.cssText = `left:${px}px;top:${py}px;width:${PIECE}px;height:${PIECE}px;z-index:2;`;
+
+        const piece = { el: cv, row: r, col: c, placed: false };
+        pieces.push(piece);
+        board.appendChild(cv);
+
+        cv.addEventListener('mousedown', e => startDrag(e, piece, 'mouse'));
+        cv.addEventListener('touchstart', e => startDrag(e, piece, 'touch'), { passive: false });
+      });
+
+      updateStatus();
+      startTimer();
+    }
+
+    /* =============================================
+       DRAG — mouse + touch unificados
+    ============================================= */
+    function getXY(e) {
+      if (e.touches && e.touches.length > 0)
+        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      if (e.changedTouches && e.changedTouches.length > 0)
+        return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+      return { x: e.clientX, y: e.clientY };
+    }
+
+    function startDrag(e, piece, _type) {
+      if (piece.placed) return;
+      e.preventDefault();
+      dragging = piece;
+      piece.el.classList.add('dragging');
+      piece.el.style.zIndex = 999;
+      const rect = board.getBoundingClientRect();
+      const { x, y } = getXY(e);
+      offX = x - rect.left - parseInt(piece.el.style.left);
+      offY = y - rect.top - parseInt(piece.el.style.top);
+    }
+
+    function onMove(e) {
+      if (!dragging) return;
+      e.preventDefault();
+      const rect = board.getBoundingClientRect();
+      const { x, y } = getXY(e);
+      const px = Math.max(0, Math.min(N * PIECE - PIECE, x - rect.left - offX));
+      const py = Math.max(0, Math.min(N * PIECE - PIECE, y - rect.top - offY));
+      dragging.el.style.left = px + 'px';
+      dragging.el.style.top = py + 'px';
+    }
+
+    function onUp(e) {
+      if (!dragging) return;
+      const x = parseInt(dragging.el.style.left);
+      const y = parseInt(dragging.el.style.top);
+      const tx = dragging.col * PIECE;
+      const ty = dragging.row * PIECE;
+      const snap = PIECE * SNAP_RATIO;
+      if (Math.abs(x - tx) < snap && Math.abs(y - ty) < snap) {
+        dragging.el.style.left = tx + 'px';
+        dragging.el.style.top = ty + 'px';
+        dragging.el.classList.add('correct');
+        dragging.placed = true;
+      }
+      dragging.el.classList.remove('dragging');
+      dragging.el.style.zIndex = dragging.placed ? 1 : 2;
+      moves++;
+      statMoves.textContent = moves;
+      dragging = null;
+      updateStatus();
+    }
+
+    function updateStatus() {
+      const done = pieces.filter(p => p.placed).length;
+      const total = pieces.length;
+      progDone.textContent = done;
+      progTotal.textContent = total;
+      progBar.style.width = (total ? Math.round(done / total * 100) : 0) + '%';
+      if (done === total && total > 0) {
+        stopTimer();
+        winBox.style.display = 'block';
+        winSub.textContent = moves + ' movimentos · ' + fmt(timerSecs);
+      }
+    }
+
+    /* =============================================
+       EVENTOS GLOBAIS
+    ============================================= */
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    document.addEventListener('touchmove', e => { if (dragging) onMove(e); }, { passive: false });
+    document.addEventListener('touchend', onUp, { passive: false });
+    document.addEventListener('touchcancel', onUp, { passive: false });
+
+    /* Recalcular board ao girar/redimensionar */
+    window.addEventListener('resize', () => {
+      if (img) startGame();
+    });
+
+    document.getElementById('shuffle-btn').addEventListener('click', initGame);
+    diffSelect.addEventListener('change', () => { updateBounty(); initGame(); });
+
+    fileInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const im = new Image();
+        im.onload = () => { img = im; startGame(); };
+        im.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById('hint-btn').addEventListener('click', () => {
+      if (hinting) return;
+      hinting = true;
+      pieces.forEach(p => { if (!p.placed) p.el.style.opacity = '.2'; });
+      const oc = document.createElement('canvas');
+      oc.width = N * PIECE;
+      oc.height = N * PIECE;
+      oc.style.cssText = `position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.5;`;
+      oc.id = 'hint-overlay';
+      oc.getContext('2d').drawImage(img, 0, 0, N * PIECE, N * PIECE);
+      board.appendChild(oc);
+      setTimeout(() => {
+        pieces.forEach(p => { if (!p.placed) p.el.style.opacity = ''; });
+        document.getElementById('hint-overlay')?.remove();
+        hinting = false;
+      }, 2500);
+    });
+
+    /* =============================================
+       INIT
+    ============================================= */
+    buildImagePicker();
+
+    if (lista_de_imagens.length > 0) {
+      const im = new Image();
+      im.onload = () => { img = im; initGame(); };
+      im.onerror = () => initGame();
+      im.src = lista_de_imagens[0];
+    } else {
+      initGame();
+    }
+  </script>
+</body>
+
+</html>
