@@ -590,6 +590,8 @@
       border-radius: 1px;
       overflow: hidden;
       box-shadow: inset 0 0 24px rgba(0, 0, 0, .4);
+      /* FIX: impede que o touch no board role a página */
+      touch-action: none;
     }
 
     .piece {
@@ -598,6 +600,7 @@
       box-sizing: border-box;
       border: 1px solid rgba(255, 255, 255, .15);
       box-shadow: 2px 2px 6px rgba(0, 0, 0, .5);
+      /* FIX: desativa qualquer touch-action padrão nas peças */
       touch-action: none;
       user-select: none;
       -webkit-user-select: none;
@@ -969,12 +972,12 @@
     const imgPicker   = document.getElementById('image-picker');
 
     /* Modal refs */
-    const overlay       = document.getElementById('confirm-overlay');
-    const confirmOkBtn  = document.getElementById('confirm-ok');
-    const confirmCancel = document.getElementById('confirm-cancel');
-    const confirmTitle  = document.getElementById('confirm-title');
+    const overlay         = document.getElementById('confirm-overlay');
+    const confirmOkBtn    = document.getElementById('confirm-ok');
+    const confirmCancel   = document.getElementById('confirm-cancel');
+    const confirmTitle    = document.getElementById('confirm-title');
     const confirmQuestion = document.getElementById('confirm-question');
-    const confirmSub    = document.getElementById('confirm-sub');
+    const confirmSub      = document.getElementById('confirm-sub');
 
     let img = null, N = 4, PIECE = 80;
     let pieces = [], dragging = null, offX = 0, offY = 0;
@@ -983,22 +986,21 @@
     let gameStarted = false;
     const SNAP_RATIO = 0.28;
 
+    // FIX: guarda o último tamanho do board para detectar resize real
+    let lastBoardWidth = 0;
+
     /* =============================================
        MODAL — helpers
     ============================================= */
     let pendingAction = null;
 
     function askConfirm(opts, onConfirm) {
-      /* opts: { title, question, sub, okLabel } */
       confirmTitle.textContent    = opts.title    || 'Abandonar Caçada?';
       confirmQuestion.innerHTML   = opts.question || 'Tem certeza que quer abandonar<br>a caçada atual?';
       confirmSub.textContent      = opts.sub      || 'Seu progresso será perdido para sempre!';
       confirmOkBtn.textContent    = opts.okLabel  || '⚔️ Nova Caçada';
-
       pendingAction = onConfirm;
       overlay.classList.add('open');
-
-      /* foco acessível */
       confirmCancel.focus();
     }
 
@@ -1008,36 +1010,24 @@
     }
 
     confirmOkBtn.addEventListener('click', () => {
-      if (pendingAction){
-        pendingAction();
-      }
+      if (pendingAction) pendingAction();
       closeModal();
     });
-
     confirmCancel.addEventListener('click', closeModal);
-
-    /* Fecha ao clicar fora do modal */
-    overlay.addEventListener('click', e => {
-      if (e.target === overlay) closeModal();
-    });
-
-    /* Fecha com Escape */
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal();
     });
 
-    /* Guarda o valor anterior do diff para poder reverter */
     let lastDiffValue = diffSelect.value;
 
     /* =============================================
        VERIFICAR SE DEVE PERGUNTAR ANTES
     ============================================= */
     function shouldAskConfirm() {
-      /* Só pergunta se o jogo está em andamento e tem peças não colocadas */
       if (!gameStarted) return false;
       const done  = pieces.filter(p => p.placed).length;
       const total = pieces.length;
-      /* Não pergunta se já terminou ou ainda não começou */
       if (total === 0 || done === total) return false;
       return true;
     }
@@ -1072,7 +1062,6 @@
             im.onerror = () => alert('Não foi possível carregar a imagem.');
             im.src = src;
           };
-
           if (shouldAskConfirm()) {
             askConfirm({
               title:    'Trocar Procurado?',
@@ -1155,6 +1144,8 @@
 
     function startGame() {
       const SIZE = calcBoardSize();
+      lastBoardWidth = SIZE; // FIX: registra o tamanho atual
+
       board.style.width  = SIZE + 'px';
       board.style.height = SIZE + 'px';
       board.innerHTML = ''; pieces = [];
@@ -1198,7 +1189,52 @@
     }
 
     /* =============================================
-       DRAG
+       FIX: RESIZE — só reescala se a largura realmente mudou
+    ============================================= */
+    function onResize() {
+      if (!img) return;
+      const newSize = calcBoardSize();
+      if (newSize === lastBoardWidth) return; // scroll no mobile não muda a largura real — ignora
+
+      // Salva posições relativas (como fração do board) e estado de cada peça
+      const ratio = newSize / lastBoardWidth;
+      lastBoardWidth = newSize;
+
+      board.style.width  = newSize + 'px';
+      board.style.height = newSize + 'px';
+
+      pieces.forEach(p => {
+        const oldLeft = parseInt(p.el.style.left);
+        const oldTop  = parseInt(p.el.style.top);
+
+        p.el.style.width  = PIECE + 'px';
+        p.el.style.height = PIECE + 'px';
+
+        if (p.placed) {
+          // Peças corretas: reposiciona exatamente na grade
+          p.el.style.left = (p.col * PIECE) + 'px';
+          p.el.style.top  = (p.row * PIECE) + 'px';
+        } else {
+          // Peças livres: escala proporcionalmente, mantendo dentro do board
+          const nx = Math.max(0, Math.min(newSize - PIECE, oldLeft * ratio));
+          const ny = Math.max(0, Math.min(newSize - PIECE, oldTop  * ratio));
+          p.el.style.left = nx + 'px';
+          p.el.style.top  = ny + 'px';
+        }
+
+        // Redesenha o canvas da peça no novo tamanho
+        const cv = p.el;
+        cv.width  = PIECE;
+        cv.height = PIECE;
+        cv.getContext('2d').drawImage(img,
+          (p.col / N) * img.naturalWidth, (p.row / N) * img.naturalHeight,
+          img.naturalWidth / N, img.naturalHeight / N,
+          0, 0, PIECE, PIECE);
+      });
+    }
+
+    /* =============================================
+       DRAG — FIX: preventDefault no touchstart para bloquear scroll
     ============================================= */
     function getXY(e) {
       if (e.touches && e.touches.length > 0)
@@ -1210,7 +1246,8 @@
 
     function startDrag(e, piece, _type) {
       if (piece.placed) return;
-      e.preventDefault();
+      e.preventDefault(); // bloqueia scroll da página ao começar o drag
+      e.stopPropagation();
       dragging = piece;
       piece.el.classList.add('dragging');
       piece.el.style.zIndex = 999;
@@ -1222,7 +1259,7 @@
 
     function onMove(e) {
       if (!dragging) return;
-      e.preventDefault();
+      e.preventDefault(); // bloqueia scroll enquanto arrasta
       const rect = board.getBoundingClientRect();
       const { x, y } = getXY(e);
       const px = Math.max(0, Math.min(N * PIECE - PIECE, x - rect.left - offX));
@@ -1231,7 +1268,7 @@
       dragging.el.style.top  = py + 'px';
     }
 
-    function onUp() {
+    function onUp(e) {
       if (!dragging) return;
       const x = parseInt(dragging.el.style.left);
       const y = parseInt(dragging.el.style.top);
@@ -1271,11 +1308,24 @@
     ============================================= */
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
-    document.addEventListener('touchmove', e => { if (dragging) onMove(e); }, { passive: false });
-    document.addEventListener('touchend', onUp,    { passive: false });
+
+    // FIX: touchmove com passive:false para poder chamar preventDefault
+    document.addEventListener('touchmove', e => {
+      if (dragging) {
+        e.preventDefault(); // bloqueia scroll APENAS enquanto há drag ativo
+        onMove(e);
+      }
+    }, { passive: false });
+
+    document.addEventListener('touchend',    onUp, { passive: false });
     document.addEventListener('touchcancel', onUp, { passive: false });
 
-    window.addEventListener('resize', () => { if (img) startGame(); });
+    // FIX: debounce no resize + só reage se a largura mudou de verdade
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(onResize, 150);
+    });
 
     /* Botão "Nova Caçada" */
     document.getElementById('shuffle-btn').addEventListener('click', () => {
@@ -1295,9 +1345,7 @@
     diffSelect.addEventListener('change', () => {
       if (shouldAskConfirm()) {
         const newVal = diffSelect.value;
-        /* Reverte visualmente enquanto aguarda confirmação */
         diffSelect.value = lastDiffValue;
-
         askConfirm({
           title:    'Mudar Dificuldade?',
           question: 'Mudar a dificuldade vai<br>reiniciar a caçada atual.',
@@ -1327,7 +1375,6 @@
         };
         reader.readAsDataURL(file);
       };
-
       if (shouldAskConfirm()) {
         askConfirm({
           title:    'Usar Novo Cartaz?',
